@@ -56,13 +56,19 @@ router.get('/:id/posts', validateUserId, async (req, res, next) => {
   }
 });
 
-router.post('/:id/posts', validateUserId, validateUser, validatePost, (req, res) => {
-  // RETURN THE NEWLY CREATED USER POST
-  // this needs a middleware to verify user id
-  // and another middleware to check that the request body is valid
+router.post('/:id/posts', validateUserId, validatePost, async (req, res, next) => {
+  try {
+    const newPost = await Posts.insert({
+      user_id: req.params.id,
+      text: req.text
+    })
+    res.status(201).json(newPost)
+  } catch (err) {
+    next(err)
+  }
 });
 
-router.use((err, req, res, next) => {
+router.use((err, req, res) => {
   res.status(err.status || 500).json({
     customMessage: 'something tragic inside posts router happened',
     message: err.message,
